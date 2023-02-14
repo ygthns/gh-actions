@@ -1,5 +1,16 @@
 name: First Workflow
-on: workflow_dispatch 
+on:
+  pull_request: # Trigger whenever a merge request opened.
+    types:
+      - opened
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - 'dev-*' # dev-new, dev-this, dev-there
+      - 'feat/**' # feat/new, feat/new/button
+    paths-ignore:
+      - '.github/workflows/*'
 jobs:
   first-job:
     runs-on: ubuntu-latest
