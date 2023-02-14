@@ -1,0 +1,16 @@
+name: Test Project
+on: push # Trigger case, run it on push.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3 # Hazir marketplace actionslarini bu sekilde kullaniyoruz. 'run' yerine 'uses'. with ile bir parametre eklemedim cunku default olarak attached oldugu repositoryde calisir
+      - name: Install NodeJS # Zorunlu degil cunku github runnerlarinda otomatik olarak yuklu geliyor.
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Install dependicies
+        run: npm ci
+      - name: Run tests
+        run: npm test
