@@ -1,5 +1,5 @@
 name: Deploy Project
-on: push # Trigger case, run it on push.
+on: [push, workflow_dispatch] # Trigger case, run it on push. We can also add multiple events, that means i can trigger tis event also manually too.
 jobs:
   test:
     runs-on: ubuntu-latest
