@@ -26,7 +26,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get code
-        uses: actions/checkout@v3 
+        uses: actions/checkout@v3
+      - name: Get build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-files # name should be same in order download that artifact
+      - name: Output content
+        run: ls
       - name: Install NodeJS 
         uses: actions/setup-node@v3
         with:
