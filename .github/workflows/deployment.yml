@@ -1,9 +1,25 @@
 name: Deploy Project
 on: [push, workflow_dispatch] # Trigger case, run it on push. We can also add multiple events, that means i can trigger tis event also manually too.
+
+env:
+  ALLOWED_USERS: ${{ secrets.ALLOWED_USERS }}
+  
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Check User
+        run: |
+          ALLOWED_USERS=(${ALLOWED_USERS//,/ })
+          for user in "${ALLOWED_USERS[@]}"; do
+            if [[ "$user" == "$GITHUB_ACTOR" ]]; then
+              echo "User $GITHUB_ACTOR is allowed to trigger the pipeline"
+              exit 0
+            fi
+          done
+          echo "User $GITHUB_ACTOR is not allowed to trigger the pipeline"
+          exit 1
+          
       - name: Get code
         uses: actions/checkout@v3 # Hazir marketplace actionslarini bu sekilde kullaniyoruz. 'run' yerine 'uses'. with ile bir parametre eklemedim cunku default olarak attached oldugu repositoryde calisir
       - name: Install NodeJS # Zorunlu degil cunku github runnerlarinda otomatik olarak yuklu geliyor.
