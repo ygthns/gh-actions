@@ -17,25 +17,36 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      ssh -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@${sftpServer} <<EOF
-      # Navigate to the builds directory
-      cd /home/Builds/SeerPortal/
+      ssh -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@"${sftpServer}" << 'EOL'
 
-      # Get the latest and second latest versions
-      latest_version=$(ls -1 seerportal_* | sort -r | head -n 1 | awk -F '_' '{print $2}')
-      second_latest_version=$(ls -1 seerportal_* | sort -r | head -n 2 | tail -n 1 | awk -F '_' '{print $2}')
+      echo "Local system name: $HOSTNAME"
+      echo "Local date and time: $(date)"
+      ip a
 
-      # Compare the versions
-      if [[ "$latest_version" == "$second_latest_version" ]]; then
-        # If the change is minor, send it to the dev server
-        # scp seerportal_${latest_version}_*.tar.gz runner@192.168.1.235:/path/to/dev/server/
-        ls -alh scp seerportal_${latest_version}_*.tar.gz
+      latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
+      second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
+
+            # Extract the major and minor version numbers
+      latest_first_digit=$(echo $latest_version | awk -F '.' '{print $1}')
+      latest_second_digit=$(echo $latest_version | awk -F '.' '{print $2}')
+      latest_third_digit=$(echo $latest_version | awk -F '.' '{print $3}')
+
+      second_latest_first_digit=$(echo $second_latest_version | awk -F '.' '{print $1}')
+      second_latest_second_digit=$(echo $second_latest_version | awk -F '.' '{print $2}')
+      second_latest_third_digit=$(echo $second_latest_version | awk -F '.' '{print $3}')
+
+            # Compare the versions
+      if [[ "$latest_first_digit" -eq "$second_latest_first_digit" && "$latest_second_digit" -eq "$second_latest_second_digit" ]]; then
+            # If the change is minor, send it to the dev server
+              #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.235:/path/to/dev/server/
+        ls -alh "/home/Builds/SeerPortal/"
       else
-        # If the change is major, send it to the test server
-        #scp seerportal_${latest_version}_*.tar.gz runner@192.168.1.223:/path/to/test/server/
-        ls -alh scp seerportal_${latest_version}_*.tar.gz
+              # If the change is major, send it to the test server
+              #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.223:/path/to/test/server/
+        ls -alh "/home/Builds/SeerPortal/"
       fi
-      EOF
+      EOL
+
 
 
 #       # Determine if the new build is a major or minor version change
