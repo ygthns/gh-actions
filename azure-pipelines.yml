@@ -1,19 +1,60 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+- none
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
+
+variables:
+  sftpServer: '192.168.1.232'
+  devServer: '192.168.1.235'
+  testServer: '192.168.1.223'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      # Connect to SFTP server and get the latest build
+      sshpass -p "$(sftpPassword)" sftp -oBatchMode=no -b - "$(sftpUser)@$(sftpServer)" <<EOF
+      cd /home/Builds/SeerPortal/
+      latest_build=$(ls -Art seerportal_* | tail -n 1)
+      EOF
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+      # Determine if the new build is a major or minor version change
+      current_version=$(echo "$latest_build" | sed -E 's/seerportal_([0-9]+\.[0-9]+\.[0-9]+)_.*/\1/')
+      new_build=$(find $(Build.ArtifactStagingDirectory) -name 'seerportal_*')
+      new_version=$(echo "$new_build" | sed -E 's/.*seerportal_([0-9]+\.[0-9]+\.[0-9]+)_.*/\1/')
+      major_version=$(echo "$current_version" | cut -d '.' -f 1)
+      new_major_version=$(echo "$new_version" | cut -d '.' -f 1)
+
+      if [ $new_major_version -gt $major_version ]; then
+        echo "##vso[task.setvariable variable=versionChange]major"
+      else
+        echo "##vso[task.setvariable variable=versionChange]minor"
+      fi
+
+- task: Bash@3
+  displayName: 'Copy to Dev or Test server based on version change'
+  condition: and(succeeded(), eq(variables['Agent.JobStatus'], 'Succeeded'))
+  inputs:
+    targetType: 'inline'
+    script: |
+      if [ "$(versionChange)" == "major" ]; then
+        sshpass -p "$(devServerPassword)" scp -o StrictHostKeyChecking=no $(find $(Build.ArtifactStagingDirectory) -name 'seerportal_*') "$(devServerUser)@$(devServer):/home/seerportal/"
+        echo "Copying to Dev server"
+      else
+        sshpass -p "$(testServerPassword)" scp -o StrictHostKeyChecking=no $(find $(Build.ArtifactStagingDirectory) -name 'seerportal_*') "$(testServerUser)@$(testServer):/home/seerportal/"
+        echo "Copying to Test server"
+      fi
+
+- task: Bash@3
+  displayName: 'Trigger Ansible playbook'
+  condition: and(succeeded(), eq(variables['Agent.JobStatus'], 'Succeeded'))
+  inputs:
+    targetType: 'inline'
+    script: |
+      if [ "$(versionChange)" == "major" ]; then
+        ansible-playbook ansible/deploy_to_dev.yml -i ansible/hosts --extra-vars "version=$(new_version) build=$(new_build) current_version=$(current_version)"
+      else
+        ansible-playbook ansible/deploy_to_test.yml -i ansible/hosts --extra-vars "version=$(new_version) build=$(new_build) current_version=$(current_version)"
+      fi
