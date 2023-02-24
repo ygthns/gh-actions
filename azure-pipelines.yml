@@ -2,7 +2,7 @@ trigger:
 - none
 
 pool:
-  name: Default
+  name: Ansible Server
   demands:
   - Agent.Name -equals Ansible-Server- USATL-CORP-DEMO-GRAFANA
 
