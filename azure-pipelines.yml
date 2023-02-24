@@ -12,22 +12,31 @@ variables:
   testServer: '192.168.1.223'
 
 steps:
- - script: |
-     ls -alh
-     pwd
-     echo "Hello, world!"
-   displayName: testing my agent
+- task: Bash@3
+  displayName: 'Detect the version change type, and send it to the proper server'
+  inputs:
+    targetType: 'inline'
+    script: |
+      ssh -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@${sftpServer} <<EOF
+      # Navigate to the builds directory
+      cd /home/Builds/SeerPortal/
 
+      # Get the latest and second latest versions
+      latest_version=$(ls -1 seerportal_* | sort -r | head -n 1 | awk -F '_' '{print $2}')
+      second_latest_version=$(ls -1 seerportal_* | sort -r | head -n 2 | tail -n 1 | awk -F '_' '{print $2}')
 
-# - task: Bash@3
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       # Connect to SFTP server and get the latest build
-#       sshpass -p "$(sftpPassword)" sftp -oBatchMode=no -b - "$(sftpUser)@$(sftpServer)" <<EOF
-#       cd /home/Builds/SeerPortal/
-#       latest_build=$(ls -Art seerportal_* | tail -n 1)
-#       EOF
+      # Compare the versions
+      if [[ "$latest_version" == "$second_latest_version" ]]; then
+        # If the change is minor, send it to the dev server
+        # scp seerportal_${latest_version}_*.tar.gz runner@192.168.1.235:/path/to/dev/server/
+        ls -alh scp seerportal_${latest_version}_*.tar.gz
+      else
+        # If the change is major, send it to the test server
+        #scp seerportal_${latest_version}_*.tar.gz runner@192.168.1.223:/path/to/test/server/
+        ls -alh scp seerportal_${latest_version}_*.tar.gz
+      fi
+      EOF
+
 
 #       # Determine if the new build is a major or minor version change
 #       current_version=$(echo "$latest_build" | sed -E 's/seerportal_([0-9]+\.[0-9]+\.[0-9]+)_.*/\1/')
