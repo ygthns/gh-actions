@@ -1,8 +1,5 @@
 name: Deploy Project
 on: [push, workflow_dispatch] # Trigger case, run it on push. We can also add multiple events, that means i can trigger tis event also manually too.
-
-env:
-  ALLOWED_USERS: ${{ env.ALLOWED_USERS }}
   
 jobs:
   test:
@@ -10,13 +7,16 @@ jobs:
     steps:
       - name: Check User
         run: |
-          ALLOWED_USERS=(${ALLOWED_USERS//,/ })
+          echo $ALLOWED_USERS
+          echo $env.ALLOWED_USERS
+          IFS=',' read -ra ALLOWED_USERS <<< "$ALLOWED_USERS"
           for user in "${ALLOWED_USERS[@]}"; do
             if [[ "$user" == "$GITHUB_ACTOR" ]]; then
               echo "User $GITHUB_ACTOR is allowed to trigger the pipeline"
               exit 0
             fi
           done
+          echo "$user"
           echo "User $GITHUB_ACTOR is not allowed to trigger the pipeline"
           exit 1
           
