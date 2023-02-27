@@ -5,12 +5,17 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+    
+      - name: Example step
+        run: |
+          echo "The value of ALLOWED_USER is ${{ env.ALLOWED_USER }}"
+     
       - name: Check User
         run: |
-          echo $ALLOWED_USERS
-          echo $env.ALLOWED_USERS
-          IFS=',' read -ra ALLOWED_USERS <<< "$ALLOWED_USERS"
-          for user in "${ALLOWED_USERS[@]}"; do
+          echo $ALLOWED_USER
+          echo $env.ALLOWED_USER
+          IFS=',' read -ra ALLOWED_USER <<< "$ALLOWED_USER"
+          for user in "${ALLOWED_USER[@]}"; do
             if [[ "$user" == "$GITHUB_ACTOR" ]]; then
               echo "User $GITHUB_ACTOR is allowed to trigger the pipeline"
               exit 0
