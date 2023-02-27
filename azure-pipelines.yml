@@ -41,7 +41,7 @@ steps:
               #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.235:/path/to/dev/server/
               # ls -alh "/home/Builds/SeerPortal/seerportal_v${latest_version}_*.tar.gz"
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
-        echo "Major change detected, build ${target_build} will be deployed on the Test Server"
+        echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
       else
               # If the change is major, send it to the test server
               #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.223:/path/to/test/server/
