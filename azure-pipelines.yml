@@ -39,11 +39,11 @@ steps:
       if [[ "$latest_first_digit" -eq "$second_latest_first_digit" && "$latest_second_digit" -eq "$second_latest_second_digit" ]]; then
             # If the change is minor, send it to the dev server
               #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.235:/path/to/dev/server/
-        ls -alh "/home/Builds/SeerPortal/"
+        ls -alh "/home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz"
       else
               # If the change is major, send it to the test server
               #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.223:/path/to/test/server/
-        ls -alh "/home/Builds/SeerPortal/"
+        ls -alh "/home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz"
       fi
       EOL
 
