@@ -8,7 +8,7 @@ jobs:
     
       - name: Example step
         run: |
-          echo "The value of ALLOWED_USER is ${{ env.ALLOWED_USER }}"
+          echo "The value of ALLOWED_USER is ${{ vars.ALLOWED_USER }}"
      
       - name: Check User
         run: |
