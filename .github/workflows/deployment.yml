@@ -2,7 +2,7 @@ name: Deploy Project
 on: [push, workflow_dispatch] # Trigger case, run it on push. We can also add multiple events, that means i can trigger tis event also manually too.
 
 env:
-  ALLOWED_USERS: ${{ secrets.ALLOWED_USERS }}
+  ALLOWED_USERS: ${{ env.ALLOWED_USERS }}
   
 jobs:
   test:
