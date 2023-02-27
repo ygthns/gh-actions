@@ -14,7 +14,7 @@ jobs:
         run: |
           echo $ALLOWED_USER
           echo $env.ALLOWED_USER
-          IFS=',' read -ra ALLOWED_USER <<< "$ALLOWED_USER"
+          IFS=',' read -ra ALLOWED_USER <<< "${{ vars.ALLOWED_USER }}"
           for user in "${ALLOWED_USER[@]}"; do
             if [[ "$user" == "$GITHUB_ACTOR" ]]; then
               echo "User $GITHUB_ACTOR is allowed to trigger the pipeline"
