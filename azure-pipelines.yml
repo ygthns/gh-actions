@@ -56,29 +56,12 @@ steps:
   name: detection_step
 
 
-- task: Bash@3
-  displayName: 'Connect to the correct server based on environment variable'
+- task: SSH@0
   inputs:
-    targetType: 'inline'
-    script: |
-      DeploymentTarget="$(detection_step._SERVER)"
-      echo "$DeploymentTarget"
-      if [[ "$DeploymentTarget" == "dev" ]]; then
-       - task: SSH@0
-         inputs:
-            sshEndpoint: 'devSR'
-            runOptions: 'commands'
-            commands: 'echo "Hello from Dev"'
-            readyTimeout: '20000'
-
-      else
-        - task: SSH@0
-          inputs:
-            sshEndpoint: 'testSR'
-            runOptions: 'commands'
-            commands: '"Hello from Test"'
-            readyTimeout: '20000'
-      fi
+    sshEndpoint: '${detection_step._SERVER}SR'
+    runOptions: 'commands'
+    commands: 'ip a'
+    readyTimeout: '20000'
 
 # - task: Bash@3
 #   displayName: 'Copy to Dev or Test server based on version change'
