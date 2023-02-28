@@ -23,7 +23,6 @@ steps:
 
       echo "Local system name: $HOSTNAME"
       echo "Local date and time: $(date)"
-      ip a
 
       latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
       second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
@@ -66,12 +65,12 @@ steps:
       echo "$DeploymentTarget"
       if [[ "$DeploymentTarget" == "dev" ]]; then
         ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@172.18.1.232 << 'EOL'
-        echo 'Hello from Dev'
+        echo "Hello from Dev"
         # execute commands on dev server
         EOL
       else
         ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.223 << 'EOL'
-        echo 'Hello from Test'
+        echo "Hello from Test"
         EOL
       fi
 
