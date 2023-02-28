@@ -61,7 +61,7 @@ steps:
   inputs:
     sshEndpoint: 'devSR'
     runOptions: 'commands'
-    commands: 'echo ${build}'
+    commands: 'echo "$build"'
     readyTimeout: '20000'
   condition: eq(variables['detection_step._SERVER'], 'dev')
   env:
@@ -71,7 +71,7 @@ steps:
   inputs:
     sshEndpoint: 'testSR'
     runOptions: 'commands'
-    commands: 'echo ${build}'
+    commands: 'echo "$build"'
     readyTimeout: '20000'
   condition: eq(variables['detection_step._SERVER'], 'test')
   env:
