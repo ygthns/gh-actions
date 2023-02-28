@@ -54,14 +54,23 @@ steps:
       fi
       EOL
   name: detection_step
-
-
+  
 - task: SSH@0
   inputs:
-    sshEndpoint: '${detection_step._SERVER}SR'
+    sshEndpoint: 'devSR'
     runOptions: 'commands'
     commands: 'ip a'
     readyTimeout: '20000'
+  condition: eq(variables['detection_step._SERVER'], 'dev')
+  
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'testSR'
+    runOptions: 'commands'
+    commands: 'ip a'
+    readyTimeout: '20000'
+  condition: eq(variables['detection_step._SERVER'], 'test')
+
 
 # - task: Bash@3
 #   displayName: 'Copy to Dev or Test server based on version change'
