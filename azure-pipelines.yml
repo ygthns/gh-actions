@@ -18,7 +18,7 @@ steps:
     targetType: 'inline'
     script: |
       eval "$(ssh-agent -s)"
-      ssh-add ~/.ssh/id_rsa
+      ssh-add ~/.ssh/id
       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.232 << 'EOL'
 
       echo "Local system name: $HOSTNAME"
@@ -58,6 +58,7 @@ steps:
   name: detection_step
   
 - task: SSH@0
+
   inputs:
     sshEndpoint: 'devSR'
     runOptions: 'commands'
