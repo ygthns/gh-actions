@@ -42,12 +42,12 @@ steps:
             # If the change is minor, send it to the dev server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
-        scp /home/Builds/SeerPortal/${target_build} runner@192.168.1.235:/home/runner/
+        scp ${target_build} runner@172.18.1.232:/home/runner/
       else
               # If the change is major, send it to the test server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
-        scp /home/Builds/SeerPortal/${target_build} runner@192.168.1.223:/home/runner/
+        scp ${target_build} runner@192.168.1.223:/home/runner/
       fi
       EOL
 
