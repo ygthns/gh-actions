@@ -17,7 +17,9 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      ssh -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.232 << 'EOL'
+      eval "$(ssh-agent -s)"
+      ssh-add ~/.ssh/id_rsa
+      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.232 << 'EOL'
 
       echo "Local system name: $HOSTNAME"
       echo "Local date and time: $(date)"
@@ -38,15 +40,14 @@ steps:
             # Compare the versions
       if [[ "$latest_first_digit" -eq "$second_latest_first_digit" && "$latest_second_digit" -eq "$second_latest_second_digit" ]]; then
             # If the change is minor, send it to the dev server
-              #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.235:/path/to/dev/server/
-              # ls -alh "/home/Builds/SeerPortal/seerportal_v${latest_version}_*.tar.gz"
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
+        scp /home/Builds/SeerPortal/${target_build} runner@192.168.1.235:/home/runner/
       else
               # If the change is major, send it to the test server
-              #scp /home/Builds/SeerPortal/seerportal_${latest_version}_*.tar.gz runner@192.168.1.223:/path/to/test/server/
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
+        scp /home/Builds/SeerPortal/${target_build} runner@192.168.1.223:/home/runner/
       fi
       EOL
 
