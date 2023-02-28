@@ -64,18 +64,21 @@ steps:
       DeploymentTarget="$(detection_step._SERVER)"
       echo "$DeploymentTarget"
       if [[ "$DeploymentTarget" == "dev" ]]; then
-        ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@172.18.1.232 << 'SSH_DEV'
-        echo "Hello from Dev"
-        # execute commands on dev server
-        SSH_DEV
+       - task: SSH@0
+         inputs:
+            sshEndpoint: 'devSR'
+            runOptions: 'commands'
+            commands: 'echo "Hello from Dev"'
+            readyTimeout: '20000'
+
       else
-        ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.223 << 'SSH_TEST'
-        echo "Hello from Test"
-        # execute commands on test server
-        SSH_TEST
+        - task: SSH@0
+          inputs:
+            sshEndpoint: 'testSR'
+            runOptions: 'commands'
+            commands: '"Hello from Test"'
+            readyTimeout: '20000'
       fi
-
-
 
 # - task: Bash@3
 #   displayName: 'Copy to Dev or Test server based on version change'
