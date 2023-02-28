@@ -43,13 +43,13 @@ steps:
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
         scp ${target_build} runner@172.18.1.232:/home/runner/
-        echo "dev" > $(build.sourcesdirectory)/server.txt && scp $(build.sourcesdirectory)/server.txt runner@172.18.1.231:$(build.sourcesdirectory)/server.txt
+        echo "dev" > /tmp/server.txt && scp /tmp/server.txt runner@172.18.1.231:/tmp/server.txt
       else
               # If the change is major, send it to the test server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
         scp ${target_build} runner@192.168.1.223:/home/runner/
-        echo "test" > $(build.sourcesdirectory)/server.txt && scp $(build.sourcesdirectory)/server.txt runner@172.18.1.231:$(build.sourcesdirectory)/server.txt
+        echo "test" > /tmp/server.txt && scp $/tmp/server.txt runner@172.18.1.231:/tmp/server.txt
       fi
       EOL
 
@@ -59,7 +59,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      server=$(cat $(build.sourcesdirectory)/server.txt)
+      server=$(cat /tmp/server.txt)
       if [[ "$server" == "dev" ]]; then
         ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@172.18.1.232 << 'EOL'
         echo 'Hello from Dev'
