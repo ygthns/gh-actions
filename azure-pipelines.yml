@@ -60,6 +60,7 @@ steps:
     sshEndpoint: 'devSR'
     runOptions: 'commands'
     commands: |
+      ls -t /home/seerportaluser/seerportal_v* | head -1
       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
       echo "Latest file: $latest_file"
     readyTimeout: '20000'
