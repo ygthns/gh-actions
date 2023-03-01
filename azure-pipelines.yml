@@ -55,16 +55,39 @@ steps:
       EOL
   name: detection_step
   
-- task: SSH@0
+- task: Bash@3
+  displayName: 'Detect the version change type, and send it to the proper server'
   inputs:
-    sshEndpoint: 'devSR'
-    runOptions: 'commands'
-    commands: |
+    targetType: 'inline'
+    script: |
+      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.235 << 'EOL'
       ls -t /home/seerportaluser/seerportal_v* | head -1
       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
       echo "Latest file: $latest_file"
-    readyTimeout: '20000'
+      EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
+# - task: SSH@0
+#   inputs:
+#     sshEndpoint: 'devSR'
+#     runOptions: 'commands'
+#     commands: |
+#       ls -t /home/seerportaluser/seerportal_v* | head -1
+#       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
+#       echo "Latest file: $latest_file"
+#     readyTimeout: '20000'
+#   condition: eq(variables['detection_step._SERVER'], 'dev')
+- task: Bash@3
+  displayName: 'Detect the version change type, and send it to the proper server'
+  inputs:
+    targetType: 'inline'
+    script: |
+      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.223 << 'EOL'
+      ls -t /home/seerportaluser/seerportal_v* | head -1
+      latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
+      echo "Latest file: $latest_file"
+      EOL
+  condition: eq(variables['detection_step._SERVER'], 'test'
+
 
 - task: SSH@0
   inputs:
