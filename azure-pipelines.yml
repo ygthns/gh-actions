@@ -56,7 +56,7 @@ steps:
   name: detection_step
   
 - task: Bash@3
-  displayName: 'Detect the version change type, and send it to the proper server'
+  displayName: 'Deploy on dev'
   inputs:
     targetType: 'inline'
     script: |
@@ -66,18 +66,9 @@ steps:
       echo "Latest file: $latest_file"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'devSR'
-#     runOptions: 'commands'
-#     commands: |
-#       ls -t /home/seerportaluser/seerportal_v* | head -1
-#       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
-#       echo "Latest file: $latest_file"
-#     readyTimeout: '20000'
-#   condition: eq(variables['detection_step._SERVER'], 'dev')
+
 - task: Bash@3
-  displayName: 'Detect the version change type, and send it to the proper server'
+  displayName: 'Deploy on test'
   inputs:
     targetType: 'inline'
     script: |
@@ -87,18 +78,6 @@ steps:
       echo "Latest file: $latest_file"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'test')
-
-
-# - task: SSH@0
-#   inputs:
-#     sshEndpoint: 'testSR'
-#     runOptions: 'commands'
-#     commands: |
-#       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
-#       echo "Latest file: $latest_file"
-#     readyTimeout: '20000'
-#   condition: eq(variables['detection_step._SERVER'], 'test')
-
 
 # - task: Bash@3
 #   displayName: 'Copy to Dev or Test server based on version change'
