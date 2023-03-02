@@ -35,24 +35,19 @@ steps:
     targetType: 'inline'
     script: |
       eval "$(ssh-agent -s)"
-      ssh-add ~/.ssh/id_rsa
-      ssh -A -o "StrictHostKeyChecking no" $(pipelineUser)@$(sftpServer) << 'EOL'
-
+      ssh-add ~/.ssh/id
+      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.232 << 'EOL'
       echo "Local system name: $HOSTNAME"
       echo "Local date and time: $(date)"
-
       latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
       second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
-
             # Extract the major and minor version numbers
       latest_first_digit=$(echo $latest_version | awk -F '.' '{print $1}')
       latest_second_digit=$(echo $latest_version | awk -F '.' '{print $2}')
       latest_third_digit=$(echo $latest_version | awk -F '.' '{print $3}')
-
       second_latest_first_digit=$(echo $second_latest_version | awk -F '.' '{print $1}')
       second_latest_second_digit=$(echo $second_latest_version | awk -F '.' '{print $2}')
       second_latest_third_digit=$(echo $second_latest_version | awk -F '.' '{print $3}')
-
             # Compare the versions
       if [[ "$latest_first_digit" -eq "$second_latest_first_digit" && "$latest_second_digit" -eq "$second_latest_second_digit" ]]; then
             # If the change is minor, send it to the dev server
@@ -60,7 +55,8 @@ steps:
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
         scp ${target_build} seerportaluser@172.18.1.232:/home/seerportaluser/
         _SERVER="dev"
-        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"      else
+        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
+      else
               # If the change is major, send it to the test server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
