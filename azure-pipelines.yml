@@ -10,6 +10,7 @@ variables:
   sftpServer: '192.168.1.232'
   devServer: '192.168.1.235'
   testServer: '192.168.1.223'
+  group: test_variables
 
 steps:
 - task: Bash@3
@@ -55,6 +56,36 @@ steps:
       EOL
   name: detection_step
   
+- checkout: self
+- task: DownloadSecureFile@1
+  name: get_template
+  displayName: 'Download config template'
+  inputs:
+    secureFile: 'ecosystem.config.j2'
+
+- task: Bash@3
+  name: render_template
+  displayName: 'Render config template'
+  inputs:
+    targetType: 'inline'
+    script: |
+      jinja2 ecosystem.config.j2 -D ecosystem_user=$(ecosystem_user) -D ecosystem_repo=$(ecosystem_repo) -D ecosystem_ref=$(ecosystem_ref) -D ecosystem_path=$(ecosystem_path) -D ecosystem_host=$(ecosystem_host) > ecosystem.config.js
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'devSR'
+    sourceFolder: '/home/runnner'
+    contents: 'ecosystem.config.js'
+    targetFolder: '/home/seerportaluser/'
+    readyTimeout: '20000'
+  condition: eq(variables['detection_step._SERVER'], 'dev')
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'testSR'
+    sourceFolder: '/home/runnner'
+    contents: 'ecosystem.config.js'
+    targetFolder: '/home/seerportaluser/'
+    readyTimeout: '20000'
+  condition: eq(variables['detection_step._SERVER'], 'test')
 - task: Bash@3
   displayName: 'Deploy on dev'
   inputs:
@@ -66,7 +97,6 @@ steps:
       echo "Latest file: $latest_file"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
-
 - task: Bash@3
   displayName: 'Deploy on test'
   inputs:
