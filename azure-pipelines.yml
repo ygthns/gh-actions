@@ -59,7 +59,7 @@ steps:
   
 # - checkout: self
 - task: Bash@3
-  displayName: 'CLone the repo for the config files'
+  displayName: 'Clone the repo for the config files'
   inputs:
     targetType: 'inline'
     script: |
@@ -67,8 +67,6 @@ steps:
       echo ${config_repo}
       mv CICD-testing/ecosystem.config.j2 /home/runner/
       rm -rf /home/runner/CICD-testing
-      EOL
-
 - task: Bash@3
   name: render_template
   displayName: 'Render config template'
