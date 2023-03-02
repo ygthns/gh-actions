@@ -35,7 +35,7 @@ steps:
     targetType: 'inline'
     script: |
       eval "$(ssh-agent -s)"
-      ssh-add ~/.ssh/id
+      ssh-add ~/.ssh/id_rsa
       ssh -A -o "StrictHostKeyChecking no" $(pipelineUser)@$(sftpServer) << 'EOL'
 
       echo "Local system name: $HOSTNAME"
