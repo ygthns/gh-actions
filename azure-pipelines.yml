@@ -70,9 +70,15 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      echo "My ecosystem user is $(group.ecosystem_user)"
-      jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user=$(group.ecosystem_user) -D ecosystem_repo=$(group.ecosystem_repo) -D ecosystem_ref=$(group.ecosystem_ref) -D ecosystem_path=$(group.ecosystem_path) -D ecosystem_host=$(group.ecosystem_host) > /home/runner/ecosystem.config.js
+      echo "My ecosystem user is $ECOSYSTEM_USER"
+      jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user=$ECOSYSTEM_USER -D ecosystem_repo=$ECOSYSTEM_REPO -D ecosystem_ref=$ECOSYSTEM_REF -D ecosystem_path=$ECOSYSTEM_PATH -D ecosystem_host=$ECOSYSTEM_HOST > /home/runner/ecosystem.config.js
       rm -r /home/runner/CICD-testing
+  env:
+    ECOSYSTEM_USER: $(ecosystem_user)
+    ECOSYSTEM_REPO: $(ecosystem_repo)
+    ECOSYSTEM_REF:  $(ecosystem_ref)
+    ECOSYSTEM_PATH: $(ecosystem_path)
+    ECOSYSTEM_HOST: $(ecosystem_host)
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'devSR'
