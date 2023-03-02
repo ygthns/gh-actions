@@ -25,13 +25,15 @@ steps:
 - bash: |
       echo "My ecosystem user is $ECOSYSTEM_USER"
       echo "Deneme!!!!!!!!!! is $ECOSYSTEM_REPO"
-      echo "sftp ip isss $sftpServer"
+      echo "sftp ip isss $(sftpServer)"
+      echo "sftp ip isss $(devServer)"
   env:
     ECOSYSTEM_USER: $(ecosystem_user)
     ECOSYSTEM_REPO: $(ecosystem_repo)
     ECOSYSTEM_REF:  $(ecosystem_ref)
     ECOSYSTEM_PATH: $(ecosystem_path)
     ECOSYSTEM_HOST: $(ecosystem_host)
+    devServer: $(devServer)
 
 
 
