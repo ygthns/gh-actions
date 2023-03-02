@@ -73,7 +73,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      jinja2 ecosystem.config.j2 -D ecosystem_user=$(ecosystem_user) -D ecosystem_repo=$(ecosystem_repo) -D ecosystem_ref=$(ecosystem_ref) -D ecosystem_path=$(ecosystem_path) -D ecosystem_host=$(ecosystem_host) > ecosystem.config.js
+      jinja2 ecosystem.config.j2 -D ecosystem_user=$(ecosystem_user) -D ecosystem_repo=$(ecosystem_repo) -D ecosystem_ref=$(ecosystem_ref) -D ecosystem_path=$(ecosystem_path) -D ecosystem_host=$(ecosystem_host) > /home/runner/ecosystem.config.js
       rm /home/runner/ecosystem.config.j2
 - task: CopyFilesOverSSH@0
   inputs:
