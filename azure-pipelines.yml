@@ -7,16 +7,25 @@ pool:
   - Agent.Name -equals Ansible-Server- USATL-CORP-DEMO-GRAFANA
 
 variables:
-  sftpServer: '192.168.1.232'
-  devServer: '192.168.1.235'
-  testServer: '192.168.1.223'
-  group: test_variables
-  config_repo: 'git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing'
+  - group: lb-test-variables
+
+  - name: sftpServer
+    value: '192.168.1.232'
+
+  - name: devServer
+    value: '192.168.1.235'
+
+  - name: testServer
+    value: '192.168.1.223'
+
+  - name: config_repo
+    value: 'git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing'
 
 steps:
 - bash: |
       echo "My ecosystem user is $ECOSYSTEM_USER"
       echo "Deneme!!!!!!!!!! is $ECOSYSTEM_REPO"
+      echo $sftpServer
   env:
     ECOSYSTEM_USER: $(ecosystem_user)
     ECOSYSTEM_REPO: $(ecosystem_repo)
