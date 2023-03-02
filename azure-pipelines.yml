@@ -72,7 +72,8 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      jinja2 ecosystem.config.j2 -D ecosystem_user=$(test_variables.ecosystem_user) -D ecosystem_repo=$(test_variables.ecosystem_repo) -D ecosystem_ref=$(test_variables.ecosystem_ref) -D ecosystem_path=$(test_variables.ecosystem_path) -D ecosystem_host=$(test_variables.ecosystem_host) > /home/runner/ecosystem.config.js
+      echo "My ecosystem user is $(ecosystem_user)"
+      jinja2 ecosystem.config.j2 -D ecosystem_user=$(ecosystem_user) -D ecosystem_repo=$(ecosystem_repo) -D ecosystem_ref=$(ecosystem_ref) -D ecosystem_path=$(ecosystem_path) -D ecosystem_host=$(ecosystem_host) > /home/runner/ecosystem.config.js
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'devSR'
