@@ -25,7 +25,7 @@ steps:
 - bash: |
       echo "My ecosystem user is $ECOSYSTEM_USER"
       echo "Deneme!!!!!!!!!! is $ECOSYSTEM_REPO"
-      echo $sftpServer
+      echo "sftp ip isss $sftpServer"
   env:
     ECOSYSTEM_USER: $(ecosystem_user)
     ECOSYSTEM_REPO: $(ecosystem_repo)
