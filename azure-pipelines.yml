@@ -63,9 +63,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing
-      echo ${config_repo}
-      mv CICD-testing/ecosystem.config.j2 /home/runner/
+      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/
 - task: Bash@3
   name: render_template
   displayName: 'Render config template'
@@ -73,7 +71,8 @@ steps:
     targetType: 'inline'
     script: |
       echo "My ecosystem user is $(group.ecosystem_user)"
-      jinja2 ecosystem.config.j2 -D ecosystem_user=$(group.ecosystem_user) -D ecosystem_repo=$(group.ecosystem_repo) -D ecosystem_ref=$(group.ecosystem_ref) -D ecosystem_path=$(group.ecosystem_path) -D ecosystem_host=$(group.ecosystem_host) > /home/runner/ecosystem.config.js
+      jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user=$(group.ecosystem_user) -D ecosystem_repo=$(group.ecosystem_repo) -D ecosystem_ref=$(group.ecosystem_ref) -D ecosystem_path=$(group.ecosystem_path) -D ecosystem_host=$(group.ecosystem_host) > /home/runner/ecosystem.config.js
+      rm -r /home/runner/CICD-testing
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'devSR'
