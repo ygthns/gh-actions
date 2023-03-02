@@ -69,21 +69,148 @@ steps:
   
 # - checkout: self
 - task: Bash@3
-  displayName: 'Clone the repo for the config files'
+  displayName: 'Clone the proper repo for the config files.'
   inputs:
     targetType: 'inline'
     script: |
-      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
-
-- bash: |
-      jinja2 /home/runner/CICD-testing/ecosystem.config.j2 -D ecosystem_user="$ECOSYSTEM_USER" -D ecosystem_repo="$ECOSYSTEM_REPO" -D ecosystem_ref="$ECOSYSTEM_REF" -D ecosystem_path="$ECOSYSTEM_PATH" -D ecosystem_host="$ECOSYSTEM_HOST" > /home/runner/ecosystem.config.js
-      rm -r /home/runner/CICD-testing
+      git clone -b "$BRANCH" git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
   env:
-    ECOSYSTEM_USER: $(ecosystem_user)
-    ECOSYSTEM_REPO: $(ecosystem_repo)
-    ECOSYSTEM_REF:  $(ecosystem_ref)
-    ECOSYSTEM_PATH: $(ecosystem_path)
-    ECOSYSTEM_HOST: $(ecosystem_host)
+    BRANCH: $(detection_step._SERVER)
+
+- task: Bash@3
+  displayName: 'Render the template for ecosystem.config.js.'
+  inputs:
+    targetType: 'inline'
+    script: |
+      if [ "$BRANCH" == "test" ]; then
+        jinja2 /home/runner/CICD-testing/ecosystem.config.j2 -D ecosystem_user="$TEST_ECOSYSTEM_USER" -D ecosystem_repo="$TEST_ECOSYSTEM_REPO" -D ecosystem_ref="$TEST_ECOSYSTEM_REF" -D ecosystem_path="$TEST_ECOSYSTEM_PATH" -D ecosystem_host="$TEST_ECOSYSTEM_HOST" > /home/runner/ecosystem.config.js
+      elif [ "$BRANCH" == "dev" ]; then
+        jinja2 /home/runner/CICD-testing/ecosystem.config.j2 -D ecosystem_user="$DEV_ECOSYSTEM_USER" -D ecosystem_repo="$DEV_ECOSYSTEM_REPO" -D ecosystem_ref="$DEV_ECOSYSTEM_REF" -D ecosystem_path="$DEV_ECOSYSTEM_PATH" -D ecosystem_host="$DEV_ECOSYSTEM_HOST" > /home/runner/ecosystem.config.js
+      else
+        echo "Unsupported branch: $BRANCH"
+        exit 1
+      fi
+  env:
+    DEV_ECOSYSTEM_USER:  $(dev-ecosystem-user)
+    DEV_ECOSYSTEM_REPO:  $(dev-ecosystem-repo)
+    DEV_ECOSYSTEM_REF:   $(dev-ecosystem-ref)
+    DEV_ECOSYSTEM_PATH:  $(dev-ecosystem-path)
+    DEV_ECOSYSTEM_HOST:  $(dev-ecosystem-host)
+    TEST_ECOSYSTEM_USER: $(test-ecosystem-user)
+    TEST_ECOSYSTEM_REPO: $(test-ecosystem-repo)
+    TEST_ECOSYSTEM_REF:  $(test-ecosystem-ref)
+    TEST_ECOSYSTEM_PATH: $(test-ecosystem-path)
+    TEST_ECOSYSTEM_HOST: $(test-ecosystem-host)
+    BRANCH:              $(detection_step.-SERVER)
+
+- task: Bash@3
+  displayName: 'Render the template for config/production.js'
+  inputs:
+    targetType: 'inline'
+    script: |
+      if [ "$BRANCH" == "test" ]; then
+        jinja2 /home/runner/CICD-testing/production.j2 -D ecosystem_user="$TEST_ECOSYSTEM_USER" -D ecosystem_repo="$TEST_ECOSYSTEM_REPO" -D ecosystem_ref="$TEST_ECOSYSTEM_REF" -D ecosystem_path="$TEST_ECOSYSTEM_PATH" -D ecosystem_host="$TEST_ECOSYSTEM_HOST" > /home/runner/production.js
+      elif [ "$BRANCH" == "dev" ]; then
+        jinja2 /home/runner/CICD-testing/production.j2 -D ecosystem_user="$DEV_ECOSYSTEM_USER" -D ecosystem_repo="$DEV_ECOSYSTEM_REPO" -D ecosystem_ref="$DEV_ECOSYSTEM_REF" -D ecosystem_path="$DEV_ECOSYSTEM_PATH" -D ecosystem_host="$DEV_ECOSYSTEM_HOST" > /home/runner/production.js
+      else
+        echo "Unsupported branch: $BRANCH"
+        exit 1
+      fi
+  env:
+    DEV_PRODUCTION_MYSQL_HOST: $(dev-production-mysql-host)
+    DEV_PRODUCTION_MYSQL_USER: $(dev-production-mysql-user)
+    DEV_PRODUCTION_MYSQL_PASSWORD: $(dev-production-mysql-password)
+    DEV_PRODUCTION_MYSQL_DATABASE: $(dev-production-mysql-database)
+    DEV_PRODUCTION_GOOGLE_MAP_API_KEY: $(dev-production-googleMapApiKey)
+    DEV_PRODUCTION_IP_GEO_LOCATION_API_KEY: $(dev-production-ipGeoLocationApiKey)
+    DEV_PRODUCTION_IP_STACK_API_KEY: $(dev-production-ipStackApiKey)
+    DEV_PRODUCTION_REDIS_HOST: $(dev-production-redis-host)
+    DEV_PRODUCTION_REDIS_PORT: $(dev-production-redis-port)
+    DEV_PRODUCTION_REDIS_PASSWORD: $(dev-production-redis-password)
+    DEV_PRODUCTION_SCHEDULER_URL: $(dev-production-scheduler-url)
+    DEV_PRODUCTION_SCHEDULER_PORT: $(dev-production-scheduler-port)
+    DEV_PRODUCTION_KAFKA_IP: $(dev-production-kafka-ip)
+    DEV_PRODUCTION_KAFKA_PORT: $(dev-production-kafka-port)
+    DEV_PRODUCTION_ESLOG_NODE: $(dev-production-eslog-node)
+    DEV_PRODUCTION_ESLOG_USERNAME: $(dev-production-eslog-username)
+    DEV_PRODUCTION_ESLOG_PASSWORD: $(dev-production-eslog-password)
+    DEV_PRODUCTION_SSLCONFIG_KEY_FILE: $(dev-production-sslConfig-keyFile)
+    DEV_PRODUCTION_SSLCONFIG_CERT_FILE: $(dev-production-sslConfig-certFile)
+    DEV_PRODUCTION_SSLCONFIG_PASS_PHRASE: $(dev-production-sslConfig-passPhrase)
+    DEV_PRODUCTION_MASTERCARD_CONSUMER_KEY: $(dev-production-masterCardConsumerKey)
+    DEV_PRODUCTION_SERVERAUTH_ACCESS_KEY: $(dev-production-serverAuth-accessKey)
+    DEV_PRODUCTION_SERVERAUTH_IP: $(dev-production-serverAuth-ip)
+    DEV_PRODUCTION_SENDGRID_API_KEY: $(dev-production-sendGrid-apiKey)
+    DEV_PRODUCTION_CRYPTO_CONFIG_PASSWORD: $(dev-production-crypto_config-password)
+    DEV_PRODUCTION_CRYPTO_CONFIG_IV_STRING: $(dev-production-crypto_config-ivString)
+    DEV_PRODUCTION_LN_KYC_URL_USERNAME: $(dev-production-ln_kyc_url-username)
+    DEV_PRODUCTION_LN_KYC_URL_PASSWORD: $(dev-production-ln_kyc_url-password)
+    TEST_PRODUCTION_MYSQL_HOST: $(test-production-mysql-host)
+    TEST_PRODUCTION_MYSQL_USER: $(test-production-mysql-user)
+    TEST_PRODUCTION_MYSQL_PASSWORD: $(test-production-mysql-password)
+    TEST_PRODUCTION_MYSQL_DATABASE: $(test-production-mysql-database)
+    TEST_PRODUCTION_GOOGLEMAPAPIKEY: $(test-production-googleMapApiKey)
+    TEST_PRODUCTION_IPGEOLOCATIONAPIKEY: $(test-production-ipGeoLocationApiKey)
+    TEST_PRODUCTION_WHOISAPIKEY: $(test-production-whoisApiKey)
+    TEST_PRODUCTION_IPSTACKAPIKEY: $(test-production-ipStackApiKey)
+    TEST_PRODUCTION_REDIS_HOST: $(test-production-redis-host)
+    TEST_PRODUCTION_REDIS_PORT: $(test-production-redis-port)
+    TEST_PRODUCTION_SCHEDULER_URL: $(test-production-scheduler-url)
+    TEST_PRODUCTION_SCHEDULER_PORT: $(test-production-scheduler-port)
+    TEST_PRODUCTION_KAFKA_IP: $(test-production-kafka-ip)
+    TEST_PRODUCTION_KAFKA_PORT: $(test-production-kafka-port)
+    TEST_PRODUCTION_ESLOG_NODE: $(test-production-eslog-node)
+    TEST_PRODUCTION_ESLOG_USERNAME: $(test-production-eslog-username)
+    TEST_PRODUCTION_ESLOG_PASSWORD: $(test-production-eslog-password)
+    TEST_PRODUCTION_SSLCONFIG_KEYFILE: $(test-production-sslConfig-keyFile)
+    TEST_PRODUCTION_SSLCONFIG_CERTFILE: $(test-production-sslConfig-certFile)
+    TEST_PRODUCTION_SSLCONFIG_PASSPHRASE: $(test-production-sslConfig-passPhrase)
+    TEST_PRODUCTION_SSLCONFIG_HPCCKEYFILE: $(test-production-sslConfig-hpccKeyFile)
+    TEST_PRODUCTION_SSLCONFIG_MASTERCARDKEYFILE: $(test-production-sslConfig-masterCardKeyFile)
+    TEST_PRODUCTION_MASTERCARDCONSUMERKEY: $(test-production-masterCardConsumerKey)
+    TEST_PRODUCTION_SERVERAUTH_ACCESSKEY: $(test-production-serverAuth-accessKey)
+    TEST_PRODUCTION_SERVERAUTH_IP: $(test-production-serverAuth-ip)
+    TEST_PRODUCTION_SENDGRID_APIKEY: $(test-production-sendGrid-apiKey)
+    TEST_PRODUCTION_CRYPTO_CONFIG_PASSWORD: $(test-production-crypto_config-password)
+    TEST_PRODUCTION_CRYPTO_CONFIG_IVSTRING: $(test-production-crypto_config-ivString)
+    TEST_PRODUCTION_IDENTITYSEER_ORG_ID: $(test-production-identitySeer-org_id)
+    TEST_PRODUCTION_IDENTITYSEER_API_KEY: $(test-production-identitySeer-api_key)
+    TEST_PRODUCTION_LN_KYC_URL_USERNAME: $(test-production-ln_kyc_url-username)
+    TEST_PRODUCTION_LN_KYC_URL_PASSWORD: $(test-production-ln_kyc_url-password)
+    TEST_PRODUCTION_LN_SOAP_URL_USERNAME: $(test-production-ln_soap_url-username)
+    TEST_PRODUCTION_LN_SOAP_URL_PASSWORD: $(test-production-ln_soap_url-password)
+    TEST_PRODUCTION_SAR_CONFIG_USERNAME: $(test-production-sar_config-username)
+    TEST_PRODUCTION_CLAMDCONFIG_SOCKET: $(test-production-clamdConfig-socket)
+    TEST_PRODUCTION_CLAMDCONFIG_HOST: $(test-production-clamdConfig-host)
+    TEST_PRODUCTION_CLAMDCONFIG_PORT: $(test-production-clamdConfig-port)
+    TEST_PRODUCTION_OPENCORPORATEAPIKEY: $(test-production-openCorporateApiKey)
+    BRANCH:              $(detection_step.-SERVER)
+
+- task: Bash@3
+  displayName: 'Render the template for migrations/config/config.json'
+  inputs:
+    targetType: 'inline'
+    script: |
+      if [ "$BRANCH" == "test" ]; then
+        jinja2 /home/runner/CICD-testing/config.j2 -D ecosystem_user="$TEST_ECOSYSTEM_USER" -D ecosystem_repo="$TEST_ECOSYSTEM_REPO" -D ecosystem_ref="$TEST_ECOSYSTEM_REF" -D ecosystem_path="$TEST_ECOSYSTEM_PATH" -D ecosystem_host="$TEST_ECOSYSTEM_HOST" > /home/runner/config.json
+      elif [ "$BRANCH" == "dev" ]; then
+        jinja2 /home/runner/CICD-testing/config.j2 -D ecosystem_user="$DEV_ECOSYSTEM_USER" -D ecosystem_repo="$DEV_ECOSYSTEM_REPO" -D ecosystem_ref="$DEV_ECOSYSTEM_REF" -D ecosystem_path="$DEV_ECOSYSTEM_PATH" -D ecosystem_host="$DEV_ECOSYSTEM_HOST" > /home/runner/config.json
+      else
+        echo "Unsupported branch: $BRANCH"
+        exit 1
+      fi
+  env:
+    DEV_ECOSYSTEM_USER:  $(dev-ecosystem-user)
+    DEV_ECOSYSTEM_REPO:  $(dev-ecosystem-repo)
+    DEV_ECOSYSTEM_REF:   $(dev-ecosystem-ref)
+    DEV_ECOSYSTEM_PATH:  $(dev-ecosystem-path)
+    DEV_ECOSYSTEM_HOST:  $(dev-ecosystem-host)
+    TEST_ECOSYSTEM_USER: $(test-ecosystem-user)
+    TEST_ECOSYSTEM_REPO: $(test-ecosystem-repo)
+    TEST_ECOSYSTEM_REF:  $(test-ecosystem-ref)
+    TEST_ECOSYSTEM_PATH: $(test-ecosystem-path)
+    TEST_ECOSYSTEM_HOST: $(test-ecosystem-host)
+    BRANCH:              $(detection_step.-SERVER)
 
 - task: CopyFilesOverSSH@0
   inputs:
@@ -126,29 +253,3 @@ steps:
       echo "Latest file: $latest_file"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'test')
-
-# - task: Bash@3
-#   displayName: 'Copy to Dev or Test server based on version change'
-#   condition: and(succeeded(), eq(variables['Agent.JobStatus'], 'Succeeded'))
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       if [ "$(versionChange)" == "major" ]; then
-#         sshpass -p "$(devServerPassword)" scp -o StrictHostKeyChecking=no $(find $(Build.ArtifactStagingDirectory) -name 'seerportal_*') "$(devServerUser)@$(devServer):/home/seerportal/"
-#         echo "Copying to Dev server"
-#       else
-#         sshpass -p "$(testServerPassword)" scp -o StrictHostKeyChecking=no $(find $(Build.ArtifactStagingDirectory) -name 'seerportal_*') "$(testServerUser)@$(testServer):/home/seerportal/"
-#         echo "Copying to Test server"
-#       fi
-
-# - task: Bash@3
-#   displayName: 'Trigger Ansible playbook'
-#   condition: and(succeeded(), eq(variables['Agent.JobStatus'], 'Succeeded'))
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       if [ "$(versionChange)" == "major" ]; then
-#         ansible-playbook ansible/deploy_to_dev.yml -i ansible/hosts --extra-vars "version=$(new_version) build=$(new_build) current_version=$(current_version)"
-#       else
-#         ansible-playbook ansible/deploy_to_test.yml -i ansible/hosts --extra-vars "version=$(new_version) build=$(new_build) current_version=$(current_version)"
-#       fi
