@@ -11,6 +11,7 @@ variables:
   devServer: '192.168.1.235'
   testServer: '192.168.1.223'
   group: test_variables
+  config_repo: 'git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing'
 
 steps:
 - task: Bash@3
@@ -56,12 +57,17 @@ steps:
       EOL
   name: detection_step
   
-- checkout: self
-- task: DownloadSecureFile@1
-  name: get_template
-  displayName: 'Download config template'
+# - checkout: self
+- task: Bash@3
+  displayName: 'CLone the repo for the config files'
   inputs:
-    secureFile: 'ecosystem.config.j2'
+    targetType: 'inline'
+    script: |
+      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing
+      echo ${config_repo}
+      mv CICD-testing/ecosystem.config.j2 /home/runner/
+      rm -rf /home/runner/CICD-testing
+      EOL
 
 - task: Bash@3
   name: render_template
@@ -70,10 +76,11 @@ steps:
     targetType: 'inline'
     script: |
       jinja2 ecosystem.config.j2 -D ecosystem_user=$(ecosystem_user) -D ecosystem_repo=$(ecosystem_repo) -D ecosystem_ref=$(ecosystem_ref) -D ecosystem_path=$(ecosystem_path) -D ecosystem_host=$(ecosystem_host) > ecosystem.config.js
+      rm /home/runner/ecosystem.config.j2
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'devSR'
-    sourceFolder: '/home/runnner'
+    sourceFolder: '/home/runner'
     contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
@@ -81,7 +88,7 @@ steps:
 - task: CopyFilesOverSSH@0
   inputs:
     sshEndpoint: 'testSR'
-    sourceFolder: '/home/runnner'
+    sourceFolder: '/home/runner'
     contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
