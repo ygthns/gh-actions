@@ -64,14 +64,9 @@ steps:
     targetType: 'inline'
     script: |
       git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
-- task: Bash@3
-  name: render_template
-  displayName: 'Render config template'
-  inputs:
-    targetType: 'inline'
-    script: |
+- bash: |
       echo "My ecosystem user is $ECOSYSTEM_USER"
-      jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user=$ECOSYSTEM_USER -D ecosystem_repo=$ECOSYSTEM_REPO -D ecosystem_ref=$ECOSYSTEM_REF -D ecosystem_path=$ECOSYSTEM_PATH -D ecosystem_host=$ECOSYSTEM_HOST > /home/runner/ecosystem.config.js
+      jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user="$ECOSYSTEM_USER" -D ecosystem_repo="$ECOSYSTEM_REPO" -D ecosystem_ref="$ECOSYSTEM_REF" -D ecosystem_path="$ECOSYSTEM_PATH" -D ecosystem_host="$ECOSYSTEM_HOST" > /home/runner/ecosystem.config.js
       rm -r /home/runner/CICD-testing
   env:
     ECOSYSTEM_USER: $(ecosystem_user)
