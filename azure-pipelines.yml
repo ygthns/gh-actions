@@ -7,8 +7,11 @@ pool:
   - Agent.Name -equals Ansible-Server- USATL-CORP-DEMO-GRAFANA
 
 variables:
+
+    # Libraries
   - group: lb-test-variables
 
+    # Variables
   - name: sftpServer
     value: '192.168.1.232'
 
@@ -18,124 +21,124 @@ variables:
   - name: testServer
     value: '192.168.1.223'
 
+  - name: pipelineUser
+    value: 'runner'
+
   - name: config_repo
     value: 'git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing'
+    
+    #Pipeline Conditions
+  - name: is-dev
+    value: ${{ eq(variables['detection_step._SERVER'], 'dev') }}
+    
+  - name: is-test
+    value: ${{ eq(variables['detection_step._SERVER'], 'test') }}
 
 steps:
+
+- task: Bash@3
+  displayName: 'Detect the version change type, and send it to the proper server'
+  inputs:
+    targetType: 'inline'
+    script: |
+      eval "$(ssh-agent -s)"
+      ssh-add ~/.ssh/id
+      ssh -A -o "StrictHostKeyChecking no" $(pipelineUser)@$(sftpServer) << 'EOL'
+
+      echo "Local system name: $HOSTNAME"
+      echo "Local date and time: $(date)"
+
+      latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
+      second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
+
+            # Extract the major and minor version numbers
+      latest_first_digit=$(echo $latest_version | awk -F '.' '{print $1}')
+      latest_second_digit=$(echo $latest_version | awk -F '.' '{print $2}')
+      latest_third_digit=$(echo $latest_version | awk -F '.' '{print $3}')
+
+      second_latest_first_digit=$(echo $second_latest_version | awk -F '.' '{print $1}')
+      second_latest_second_digit=$(echo $second_latest_version | awk -F '.' '{print $2}')
+      second_latest_third_digit=$(echo $second_latest_version | awk -F '.' '{print $3}')
+
+            # Compare the versions
+      if [[ "$latest_first_digit" -eq "$second_latest_first_digit" && "$latest_second_digit" -eq "$second_latest_second_digit" ]]; then
+            # If the change is minor, send it to the dev server
+        target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
+        echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
+        scp ${target_build} seerportaluser@172.18.1.232:/home/seerportaluser/
+        _SERVER="dev"
+        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
+      else
+              # If the change is major, send it to the test server
+        target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
+        echo "Major change detected, build ${target_build} will be deployed on the Test Server"
+        scp ${target_build} seerportaluser@192.168.1.223:/home/seerportaluser/
+        _SERVER="test"
+        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
+      fi
+      EOL
+  name: detection_step
+  
+# - checkout: self
+- task: Bash@3
+  displayName: 'Clone the repo for the config files'
+  inputs:
+    targetType: 'inline'
+    script: |
+      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
+
 - bash: |
       echo "My ecosystem user is $ECOSYSTEM_USER"
-      echo "Deneme!!!!!!!!!! is $ECOSYSTEM_REPO"
-      echo "sftp ip isss $(sftpServer)"
-      echo "sftp ip isss $(devServer)"
+      jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user="$ECOSYSTEM_USER" -D ecosystem_repo="$ECOSYSTEM_REPO" -D ecosystem_ref="$ECOSYSTEM_REF" -D ecosystem_path="$ECOSYSTEM_PATH" -D ecosystem_host="$ECOSYSTEM_HOST" > /home/runner/ecosystem.config.js
+      rm -r /home/runner/CICD-testing
   env:
     ECOSYSTEM_USER: $(ecosystem_user)
     ECOSYSTEM_REPO: $(ecosystem_repo)
     ECOSYSTEM_REF:  $(ecosystem_ref)
     ECOSYSTEM_PATH: $(ecosystem_path)
     ECOSYSTEM_HOST: $(ecosystem_host)
-    devServer: $(devServer)
 
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'devSR'
+    sourceFolder: '/home/runner'
+    contents: 'ecosystem.config.js'
+    targetFolder: '/home/seerportaluser/'
+    readyTimeout: '20000'
+  condition: is-dev
 
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'testSR'
+    sourceFolder: '/home/runner'
+    contents: 'ecosystem.config.js'
+    targetFolder: '/home/seerportaluser/'
+    readyTimeout: '20000'
+  condition: is-test
 
-# - task: Bash@3
-#   displayName: 'Detect the version change type, and send it to the proper server'
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       eval "$(ssh-agent -s)"
-#       ssh-add ~/.ssh/id
-#       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.232 << 'EOL'
+- task: Bash@3
+  displayName: 'Deploy on dev'
+  inputs:
+    targetType: 'inline'
+    script: |
+      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.235 << 'EOL'
+      ls -t /home/seerportaluser/seerportal_v* | head -1
+      latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
+      echo "Latest file: $latest_file"
+      EOL
+  condition: eq(variables['detection_step._SERVER'], 'dev')
 
-#       echo "Local system name: $HOSTNAME"
-#       echo "Local date and time: $(date)"
-
-#       latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
-#       second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
-
-#             # Extract the major and minor version numbers
-#       latest_first_digit=$(echo $latest_version | awk -F '.' '{print $1}')
-#       latest_second_digit=$(echo $latest_version | awk -F '.' '{print $2}')
-#       latest_third_digit=$(echo $latest_version | awk -F '.' '{print $3}')
-
-#       second_latest_first_digit=$(echo $second_latest_version | awk -F '.' '{print $1}')
-#       second_latest_second_digit=$(echo $second_latest_version | awk -F '.' '{print $2}')
-#       second_latest_third_digit=$(echo $second_latest_version | awk -F '.' '{print $3}')
-
-#             # Compare the versions
-#       if [[ "$latest_first_digit" -eq "$second_latest_first_digit" && "$latest_second_digit" -eq "$second_latest_second_digit" ]]; then
-#             # If the change is minor, send it to the dev server
-#         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
-#         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
-#         scp ${target_build} seerportaluser@172.18.1.232:/home/seerportaluser/
-#         _SERVER="dev"
-#         echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
-#       else
-#               # If the change is major, send it to the test server
-#         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
-#         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
-#         scp ${target_build} seerportaluser@192.168.1.223:/home/seerportaluser/
-#         _SERVER="test"
-#         echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
-#       fi
-#       EOL
-#   name: detection_step
-  
-# # - checkout: self
-# - task: Bash@3
-#   displayName: 'Clone the repo for the config files'
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
-
-# - bash: |
-#       echo "My ecosystem user is $ECOSYSTEM_USER"
-#       jinja2 CICD-testing/ecosystem.config.j2 -D ecosystem_user="$ECOSYSTEM_USER" -D ecosystem_repo="$ECOSYSTEM_REPO" -D ecosystem_ref="$ECOSYSTEM_REF" -D ecosystem_path="$ECOSYSTEM_PATH" -D ecosystem_host="$ECOSYSTEM_HOST" > /home/runner/ecosystem.config.js
-#       rm -r /home/runner/CICD-testing
-#   env:
-#     ECOSYSTEM_USER: $(ecosystem_user)
-#     ECOSYSTEM_REPO: $(ecosystem_repo)
-#     ECOSYSTEM_REF:  $(ecosystem_ref)
-#     ECOSYSTEM_PATH: $(ecosystem_path)
-#     ECOSYSTEM_HOST: $(ecosystem_host)
-# - task: CopyFilesOverSSH@0
-#   inputs:
-#     sshEndpoint: 'devSR'
-#     sourceFolder: '/home/runner'
-#     contents: 'ecosystem.config.js'
-#     targetFolder: '/home/seerportaluser/'
-#     readyTimeout: '20000'
-#   condition: eq(variables['detection_step._SERVER'], 'dev')
-# - task: CopyFilesOverSSH@0
-#   inputs:
-#     sshEndpoint: 'testSR'
-#     sourceFolder: '/home/runner'
-#     contents: 'ecosystem.config.js'
-#     targetFolder: '/home/seerportaluser/'
-#     readyTimeout: '20000'
-#   condition: eq(variables['detection_step._SERVER'], 'test')
-# - task: Bash@3
-#   displayName: 'Deploy on dev'
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.235 << 'EOL'
-#       ls -t /home/seerportaluser/seerportal_v* | head -1
-#       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
-#       echo "Latest file: $latest_file"
-#       EOL
-#   condition: eq(variables['detection_step._SERVER'], 'dev')
-# - task: Bash@3
-#   displayName: 'Deploy on test'
-#   inputs:
-#     targetType: 'inline'
-#     script: |
-#       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.223 << 'EOL'
-#       ls -t /home/seerportaluser/seerportal_v* | head -1
-#       latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
-#       echo "Latest file: $latest_file"
-#       EOL
-#   condition: eq(variables['detection_step._SERVER'], 'test')
+- task: Bash@3
+  displayName: 'Deploy on test'
+  inputs:
+    targetType: 'inline'
+    script: |
+      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.223 << 'EOL'
+      ls -t /home/seerportaluser/seerportal_v* | head -1
+      latest_file=$(ls -t /home/seerportaluser/seerportal_v* | head -1)
+      echo "Latest file: $latest_file"
+      EOL
+  condition: eq(variables['detection_step._SERVER'], 'test')
 
 # - task: Bash@3
 #   displayName: 'Copy to Dev or Test server based on version change'
