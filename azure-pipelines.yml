@@ -60,16 +60,13 @@ steps:
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
         scp ${target_build} seerportaluser@172.18.1.232:/home/seerportaluser/
         _SERVER="dev"
-        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
-        echo "##vso[task.setvariable variable=is-dev;isOutput=true]$${{ eq(variables['detection_step._SERVER'], 'dev') }}"
-      else
+        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"      else
               # If the change is major, send it to the test server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
         scp ${target_build} seerportaluser@192.168.1.223:/home/seerportaluser/
         _SERVER="test"
         echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
-        echo "##vso[task.setvariable variable=is-test;isOutput=true]$${{ eq(variables['detection_step._SERVER'], 'test') }}"
       fi
       EOL
   name: detection_step
@@ -100,7 +97,7 @@ steps:
     contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
-  condition: $(is-dev)
+  condition: eq(variables['detection_step._SERVER'], 'dev')
 
 - task: CopyFilesOverSSH@0
   inputs:
@@ -109,7 +106,7 @@ steps:
     contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
-  condition: $(is-test)
+  condition: eq(variables['detection_step._SERVER'], 'test')
 
 - task: Bash@3
   displayName: 'Deploy on dev'
