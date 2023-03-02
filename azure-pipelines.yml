@@ -100,7 +100,7 @@ steps:
     contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
-  condition: is-dev
+  condition: $(is-dev)
 
 - task: CopyFilesOverSSH@0
   inputs:
@@ -109,7 +109,7 @@ steps:
     contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
-  condition: is-test
+  condition: $(is-test)
 
 - task: Bash@3
   displayName: 'Deploy on dev'
