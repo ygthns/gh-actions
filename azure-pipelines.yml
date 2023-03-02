@@ -63,7 +63,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/
+      git clone git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
 - task: Bash@3
   name: render_template
   displayName: 'Render config template'
