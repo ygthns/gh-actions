@@ -11,7 +11,7 @@ variables:
     # Libraries
   - group: lb-test-variables
 
-  - group: lb-dev-variables
+  # - group: lb-dev-variables
 
     # Variables
   - name: sftpServer
