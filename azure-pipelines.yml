@@ -235,7 +235,7 @@ steps:
   displayName: 'Transfer the config files to dev server.'
   inputs:
     sshEndpoint: 'devSR'
-    sourceFolder: '/home/runner'
+    sourceFolder: '/home/runner/'
     contents: 'ecosystem.config.js config.json production.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
