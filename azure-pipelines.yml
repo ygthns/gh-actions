@@ -103,7 +103,7 @@ steps:
     TEST_ECOSYSTEM_REF:  $(test-ecosystem-ref)
     TEST_ECOSYSTEM_PATH: $(test-ecosystem-path)
     TEST_ECOSYSTEM_HOST: $(test-ecosystem-host)
-    BRANCH:              $(detection_step.-SERVER)
+    BRANCH:              $(detection_step._SERVER)
 
 - task: Bash@3
   displayName: 'Render the template for config/production.js'
@@ -186,7 +186,7 @@ steps:
     TEST_PRODUCTION_CLAMDCONFIG_HOST:            $(test-production-clamdConfig-host)
     TEST_PRODUCTION_CLAMDCONFIG_PORT:            $(test-production-clamdConfig-port)
     TEST_PRODUCTION_OPENCORPORATEAPIKEY:         $(test-production-openCorporateApiKey)
-    BRANCH:                                      $(detection_step.-SERVER)
+    BRANCH:                                      $(detection_step._SERVER)
 
 - task: Bash@3
   displayName: 'Render the template for migrations/config/config.json'
@@ -212,7 +212,7 @@ steps:
     # dev_CONFIG_DATABASE:  $(dev-config-database)
     # dev_CONFIG_HOST:      $(dev-config-host)
     # dev_CONFIG_PORT:      $(dev-config-port)
-    BRANCH:               $(detection_step.-SERVER)
+    BRANCH:               $(detection_step._SERVER)
 
 - task: CopyFilesOverSSH@0
   displayName: 'Transfer the config files to dev server.'
