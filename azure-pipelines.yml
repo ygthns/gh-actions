@@ -78,7 +78,7 @@ steps:
       if [ -d "/home/runner/CICD-testing" ]; then
         rm -rf /home/runner/CICD-testing
       fi
-      git clone --force -b "$BRANCH" git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
+      git clone -b "$BRANCH" git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
   env:
     BRANCH: $(detection_step._SERVER)
 
