@@ -236,9 +236,10 @@ steps:
   inputs:
     sshEndpoint: 'devSR'
     sourceFolder: '/home/runner/'
-    contents: 'ecosystem.config.js config.json production.js'
+    contents: 'ecosystem.config.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
+    failOnEmptySource: true
   condition: eq(variables['detection_step._SERVER'], 'dev')
 
 - task: CopyFilesOverSSH@0
@@ -249,8 +250,8 @@ steps:
     contents: 'ecosystem.config.js config.json production.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
+    failOnEmptySource: true
   condition: eq(variables['detection_step._SERVER'], 'test')
-
 
 - task: Bash@3
   displayName: 'Deploy on dev'
