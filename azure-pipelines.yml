@@ -236,7 +236,10 @@ steps:
   inputs:
     sshEndpoint: 'devSR'
     sourceFolder: '/home/runner/'
-    contents: 'ecosystem.config.js,config.json,production.j'
+    contents: |
+      'ecosystem.config.js'
+      'config.json'
+      'production.js'
     targetFolder: '/home/seerportaluser/'
     readyTimeout: '20000'
     failOnEmptySource: true
