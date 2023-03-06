@@ -75,7 +75,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      git clone -b "$BRANCH" git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
+      git clone --force -b "$BRANCH" git@ssh.dev.azure.com:v3/ysaglam/CICD-testing/CICD-testing /home/runner/CICD-testing
   env:
     BRANCH: $(detection_step._SERVER)
 
