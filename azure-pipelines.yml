@@ -215,16 +215,16 @@ steps:
         exit 1
       fi
   env:
-    TEST_CONFIG_USERNAME: $(test_config_username)
-    TEST_CONFIG_PASSWORD: $(test_config_password)
-    TEST_CONFIG_DATABASE: $(test_config_database)
-    TEST_CONFIG_HOST:     $(test_config_host)
-    TEST_CONFIG_PORT:     $(test_config_port)
-    DEV_CONFIG_USERNAME:  $(dev_config_username)
-    DEV_CONFIG_PASSWORD:  $(dev_config_password)
-    DEV_CONFIG_DATABASE:  $(dev_config_database)
-    DEV_CONFIG_HOST:      $(dev_config_host)
-    DEV_CONFIG_PORT:      $(dev_config_port)
+    TEST_CONFIG_USERNAME: $(test-config-username)
+    TEST_CONFIG_PASSWORD: $(test-config-password)
+    TEST_CONFIG_DATABASE: $(test-config-database)
+    TEST_CONFIG_HOST:     $(test-config-host)
+    TEST_CONFIG_PORT:     $(test-config-port)
+    DEV_CONFIG_USERNAME:  $(dev-config-username)
+    DEV_CONFIG_PASSWORD:  $(dev-config-password)
+    DEV_CONFIG_DATABASE:  $(dev-config-database)
+    DEV_CONFIG_HOST:      $(dev-config-host)
+    DEV_CONFIG_PORT:      $(dev-config-port)
     BRANCH:               $(detection_step._SERVER)
 
 - task: CopyFilesOverSSH@0
