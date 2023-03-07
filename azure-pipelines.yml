@@ -37,8 +37,8 @@ steps:
     targetType: 'inline'
     script: |
       eval "$(ssh-agent -s)"
-      ssh-add ~/.ssh/id
-      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa runner@192.168.1.232 << 'EOL'
+      ssh-add /home/runner/.ssh/id_rsa
+      ssh -A runner@192.168.1.232 << 'EOL'
       echo "Local system name: $HOSTNAME"
       echo "Local date and time: $(date)"
       latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
