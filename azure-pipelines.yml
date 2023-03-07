@@ -165,6 +165,8 @@ steps:
     DEV_PRODUCTION_CLAMDCONFIG_SOCKET:           $(dev_production_clamdconfig_socket)
     DEV_PRODUCTION_CLAMDCONFIG_HOST:             $(dev_production_clamdconfig_host)
     DEV_PRODUCTION_CLAMDCONFIG_PORT:             $(dev_production_clamdconfig_port)
+    DEV_PRODUCTION_IDENTITYSEER_API_KEY:         $(dev_production-identitySeer-api_key)
+    DEV_PRODUCTION_IDENTITYSEER_ORG_ID:          $(dev-production-identitySeer-org_id)
     TEST_PRODUCTION_MYSQL_HOST:                  $(test-production-mysql-host)
     TEST_PRODUCTION_MYSQL_USER:                  $(test-production-mysql-user)
     TEST_PRODUCTION_MYSQL_PASSWORD:              $(test-production-mysql-password)
