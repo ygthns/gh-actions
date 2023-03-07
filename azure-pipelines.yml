@@ -290,10 +290,10 @@ steps:
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
   env:
-    NEW_TAGNAME: $(detection_step.new_tagname)
-    OLD_TAGNAME: $(detection_step.old_tagname)
-    NEW_VERSION: $(detection_step.new_version)
-    OLD_VERSION: $(detection_step.old_version)
+    NEW_TAGNAME: $[ dependencies.DetectVersion.outputs['detect_step.new_tagname'] ]
+    OLD_TAGNAME: $[ dependencies.DetectVersion.outputs['detect_step.old_tagname'] ]
+    NEW_VERSION: $[ dependencies.DetectVersion.outputs['detect_step.new_version'] ]
+    OLD_VERSION: $[ dependencies.DetectVersion.outputs['detect_step.old_version'] ]
 
 - task: Bash@3
   displayName: 'Deploy on test'
