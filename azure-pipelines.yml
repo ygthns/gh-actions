@@ -281,6 +281,7 @@ steps:
     targetType: 'inline'
     script: |
       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.235 << 'EOL'
+      chmod 770 /home/seerportaluser/deployment_files/deploy_seerportal.sh
       mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
       TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
       /home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
