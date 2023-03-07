@@ -41,6 +41,14 @@ steps:
       ssh -A runner@192.168.1.232 << 'EOL'
       echo "Local system name: $HOSTNAME"
       echo "Local date and time: $(date)"
+      new_tagname=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($3, 1)}')
+      old_tagname=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($3, 1)}' | head -n 2 | tail -n 1)
+      new_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 1)}')
+      old_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 1)}' | head -n 2 | tail -n 1)
+      echo "##vso[task.setvariable variable=new_tagname;isOutput=true]$new_tagname"
+      echo "##vso[task.setvariable variable=old_tagname;isOutput=true]$old_tagname"
+      echo "##vso[task.setvariable variable=new_version;isOutput=true]$new_version"
+      echo "##vso[task.setvariable variable=old_version;isOutput=true]$old_version"
       latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
       second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
             # Extract the major and minor version numbers
@@ -55,14 +63,14 @@ steps:
             # If the change is minor, send it to the dev server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
-        scp ${target_build} seerportaluser@192.168.1.235:/home/seerportaluser/deployment_files/
+        scp ${target_build} seerportaluser@192.168.1.235:/home/seerportal/
         _SERVER="dev"
         echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
       else
               # If the change is major, send it to the test server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
-        scp ${target_build} seerportaluser@192.168.1.223:/home/seerportaluser/deployment_files/
+        scp ${target_build} seerportaluser@192.168.1.223:/home/seerportal/
         _SERVER="test"
         echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
       fi
@@ -272,11 +280,16 @@ steps:
     targetType: 'inline'
     script: |
       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.235 << 'EOL'
-      ls -t /home/seerportaluser/deployment_files/seerportal_v* | head -1
-      latest_file=$(ls -t /home/seerportaluser/deployment_files/seerportal_v* | head -1)
-      echo "Latest file: $latest_file"
+      # mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
+      # TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
+      # /home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
+  env:
+    NEW_TAGNAME: $(detection_step.new_tagname)
+    OLD_TAGNAME: $(detection_step.old_tagname)
+    NEW_VERSION: $(detection_step.new_version)
+    OLD_VERSION: $(detection_step.old_version)
 
 - task: Bash@3
   displayName: 'Deploy on test'
@@ -284,8 +297,13 @@ steps:
     targetType: 'inline'
     script: |
       ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.223 << 'EOL'
-      ls -t /home/seerportaluser/deployment_files/seerportal_v* | head -1
-      latest_file=$(ls -t /home/seerportaluser/deployment_files/seerportal_v* | head -1)
-      echo "Latest file: $latest_file"
+      # mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
+      # TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
+      # /home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'test')
+  env:
+    NEW_TAGNAME: $(detection_step.new_tagname)
+    OLD_TAGNAME: $(detection_step.old_tagname)
+    NEW_VERSION: $(detection_step.new_version)
+    OLD_VERSION: $(detection_step.old_version)
