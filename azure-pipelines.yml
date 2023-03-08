@@ -285,7 +285,7 @@ steps:
       mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
       TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
       cd /home/seerportal/
-      echo "variables['detection_step._new_version']"
+      echo "$(detection_step._new_version)"
       #/home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
