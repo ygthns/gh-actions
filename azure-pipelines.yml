@@ -280,7 +280,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.235 << 'EOL'
+      ssh -A -t seerportaluser@192.168.1.235 "export NEW_TAGNAME=$NEW_TAGNAME; export OLD_TAGNAME=$OLD_TAGNAME; export NEW_VERSION=$NEW_VERSION; export OLD_VERSION=$OLD_VERSION; bash"<< 'EOL'
       chmod 770 /home/seerportaluser/deployment_files/deploy_seerportal.sh
       mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
       TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
@@ -290,17 +290,17 @@ steps:
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
   env:
-    NEW_TAGNAME: $[dependencies.detection_step.outputs['new_tagname']]
-    OLD_TAGNAME: $[dependencies.detection_step.outputs['old_tagname']]
-    NEW_VERSION: $[dependencies.detection_step.outputs['new_version']]
-    OLD_VERSION: $[dependencies.detection_step.outputs['old_version']]
+    NEW_TAGNAME: $(detection_step.new_tagname)
+    OLD_TAGNAME: $(detection_step.old_tagname)
+    NEW_VERSION: $(detection_step.new_version)
+    OLD_VERSION: $(detection_step.old_version)
 
 - task: Bash@3
   displayName: 'Deploy on test'
   inputs:
     targetType: 'inline'
     script: |
-      ssh -A -o "StrictHostKeyChecking no" -i ~/.ssh/id_rsa seerportaluser@192.168.1.223 << 'EOL'
+      ssh -A -t seerportaluser@192.168.1.223 "export NEW_TAGNAME=$NEW_TAGNAME; export OLD_TAGNAME=$OLD_TAGNAME; export NEW_VERSION=$NEW_VERSION; export OLD_VERSION=$OLD_VERSION; bash"<< 'EOL'
       # mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
       # TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
       # /home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
