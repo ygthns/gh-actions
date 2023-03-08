@@ -41,17 +41,14 @@ steps:
       ssh -A runner@192.168.1.232 << 'EOL'
       echo "Local system name: $HOSTNAME"
       echo "Local date and time: $(date)"
+            # Parse the file name in order to use them in the deployment script
       new_tagname=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($3, 1)}')
       old_tagname=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($3, 1)}' | head -n 2 | tail -n 1)
       new_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 1)}')
       old_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 1)}' | head -n 2 | tail -n 1)
-      echo "##vso[task.setvariable variable=new_tagname;isOutput=true]$new_tagname"
-      echo "##vso[task.setvariable variable=old_tagname;isOutput=true]$old_tagname"
-      echo "##vso[task.setvariable variable=new_version;isOutput=true]$new_version"
-      echo "##vso[task.setvariable variable=old_version;isOutput=true]$old_version"
       latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | head -n 1 | awk -F '_' '{print substr($2, 2)}')
       second_latest_version=$(ls -1 /home/Builds/SeerPortal/seerportal_v* | sort -r | awk -F '_' '{print substr($2, 2)}' | head -n 2 | tail -n 1)
-            # Extract the major and minor version numbers
+            # Parse the version in order to define change type
       latest_first_digit=$(echo $latest_version | awk -F '.' '{print $1}')
       latest_second_digit=$(echo $latest_version | awk -F '.' '{print $2}')
       latest_third_digit=$(echo $latest_version | awk -F '.' '{print $3}')
@@ -65,15 +62,19 @@ steps:
         echo "Minor change detected, build ${target_build} will be deployed on the Dev Server"
         scp ${target_build} seerportaluser@192.168.1.235:/home/seerportal/
         _SERVER="dev"
-        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
       else
               # If the change is major, send it to the test server
         target_build=$(find /home/Builds/SeerPortal/ -name  "seerportal_v${latest_version}_*.tar.gz")
         echo "Major change detected, build ${target_build} will be deployed on the Test Server"
         scp ${target_build} seerportaluser@192.168.1.223:/home/seerportal/
         _SERVER="test"
-        echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
       fi
+              # Export variables
+      echo "##vso[task.setvariable variable=new_tagname;isOutput=true]$new_tagname"
+      echo "##vso[task.setvariable variable=old_tagname;isOutput=true]$old_tagname"
+      echo "##vso[task.setvariable variable=new_version;isOutput=true]$new_version"
+      echo "##vso[task.setvariable variable=old_version;isOutput=true]$old_version"
+      echo "##vso[task.setvariable variable=_SERVER;isOutput=true]$_SERVER"
       EOL
   name: detection_step
   
@@ -283,7 +284,7 @@ steps:
       ssh -A -t seerportaluser@192.168.1.235 "export NEW_TAGNAME=$NEW_TAGNAME; export OLD_TAGNAME=$OLD_TAGNAME; export NEW_VERSION=$NEW_VERSION; export OLD_VERSION=$OLD_VERSION; bash"<< 'EOL'
       chmod 770 /home/seerportaluser/deployment_files/deploy_seerportal.sh
       mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
-      TAR_PATH=basename $(ls -t /home/seerportal/seerportal_v* | head -1)
+      TAR_PATH=$(basename $(ls -t /home/seerportal/seerportal_v* | head -1))
       cd /home/seerportal/
       echo "new version: $NEW_VERSION and old version: $OLD_VERSION"
       /home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
