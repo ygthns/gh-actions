@@ -285,15 +285,11 @@ steps:
       mv /home/seerportaluser/deployment_files/deploy_seerportal.sh /home/seerportal/
       TAR_PATH=$(ls -t /home/seerportal/seerportal_v* | head -1)
       cd /home/seerportal/
-      echo "print new version: $(DetectVersionChange.new_version) and print old version: $(DetectVersionChange.old_version)"
+      echo "print new version: $(detection_step.new_version) and print old version: $(detection_step.old version)"
       #/home/seerportal/deploy_seerportal.sh "$NEW_VERSION"_"$NEW_TAGNAME" "$TAR_PATH" "$OLD_VERSION"_"$OLD_TAGNAME"
       EOL
   condition: eq(variables['detection_step._SERVER'], 'dev')
-  env:
-    DetectVersionChange.new_tagname: $(DetectVersionChange.new_tagname)
-    DetectVersionChange.old_tagname: $(DetectVersionChange.old_tagname)
-    DetectVersionChange.new_version: $(DetectVersionChange.new_version)
-    DetectVersionChange.old_version: $(DetectVersionChange.old_version)
+
 
 - task: Bash@3
   displayName: 'Deploy on test'
